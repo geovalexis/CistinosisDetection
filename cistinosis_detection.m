@@ -1,14 +1,19 @@
 
 function cistinosis_detection()
+    %Pedir parámetros al usuario 
     id_pac = input("Cual es el identificador del paciente?: ", 's');
     id_cortes = input("Que cortes quieres analizar?: ");
-    pac_path = strcat('D:\OneDrive - URV\Universidad\QuintoAny\Computer Vision\lab\practica\Imatges cistinosis\PAC\', id_pac);
+    
+    pac_path = strcat('D:\OneDrive - URV\Universidad\QuintoAny\Computer Vision\lab\practica\Imatges cistinosis\PAC\', id_pac); %Default path de las imágenes en mi caso.
     list_files = dir(pac_path);
     
+    % Iteramos sobre los cortes especificados por el usuario
     for z=1: length(id_cortes)
         images_der = [];
         images_izq = [];
         
+        %Buscamos las imágenes disponibles para el corte en concreto (tanto
+        %para el ojo izquierdo como para el derecho)
         num_corte = num2str(id_cortes(z));
         if id_cortes(z) < 10
             pattern_der = id_pac + "_\d+_\d+_PENTACAM_R_0" + num_corte; 
@@ -31,11 +36,16 @@ function cistinosis_detection()
         results = struct;
         results.izq = struct("fechas", [], "cristales", struct("PS", [], "CS", [], "PP", [], "CP", []), "intensidades", struct("PS", [], "CS", [], "PP", [], "CP", []));
         results.der = struct("fechas", [], "cristales", struct("PS", [], "CS", [], "PP", [], "CP", []), "intensidades", struct("PS", [], "CS", [], "PP", [], "CP", []));
+        
+        %Iteramos sobre las distintas imágenes (de fechas diferentes)
+        %encontradas para el corte en concreto 
         for i=1: length(images_der)
             image_path_der = string(list_files(images_der(i)).folder) + "\" + string(list_files(images_der(i)).name);
             image_path_izq = string(list_files(images_izq(i)).folder) + "\" + string(list_files(images_izq(i)).name);
             images_path = containers.Map(["izq", "der"], [image_path_izq, image_path_der]);
 
+            %Analizamos la imagen izquierda y derecha del corte para una
+            %fecha determinada
             for k = keys(images_path)
                 % 1. Localización de la cornea
                 ima = imread(images_path(k{1}));
@@ -80,6 +90,7 @@ function cistinosis_detection()
                 width_centro = min_x_der - min_x_centro;
                 width_der = max_x - min_x_der;
 
+                %Zonas dadas por las especificaciones del problema
                 zones = [min_x_izq, min_y_superficie, width_izq, height_superficie;... %PS
                          min_x_centro, min_y_superficie, width_centro, height_superficie;... %CS   
                          min_x_der, min_y_superficie, width_der, height_superficie;... %PS
@@ -104,6 +115,8 @@ function cistinosis_detection()
                         suma_valores_grises_normalizado(a) = 0;
                     end
                 end
+                
+                %Guardamos los resultados en la estructurada designada
                 results.(k{1}).cristales.PS(end+1) = n_cristales(1) + n_cristales(3);
                 results.(k{1}).intensidades.PS(end+1) = suma_valores_grises_normalizado(1) + suma_valores_grises_normalizado(3);
                 results.(k{1}).cristales.CS(end+1) = n_cristales(2); 
