@@ -5,9 +5,10 @@ function cistinosis_detection()
     pac_path = strcat('D:\OneDrive - URV\Universidad\QuintoAny\Computer Vision\lab\practica\Imatges cistinosis\PAC\', id_pac);
     list_files = dir(pac_path);
     
-    images_der = [];
-    images_izq = [];
     for z=1: length(id_cortes)
+        images_der = [];
+        images_izq = [];
+        
         num_corte = num2str(id_cortes(z));
         if id_cortes(z) < 10
             pattern_der = id_pac + "_\d+_\d+_PENTACAM_R_0" + num_corte; 
@@ -27,7 +28,7 @@ function cistinosis_detection()
             end
         end
 
-        results = struct();
+        results = struct;
         results.izq = struct("fechas", [], "cristales", struct("PS", [], "CS", [], "PP", [], "CP", []), "intensidades", struct("PS", [], "CS", [], "PP", [], "CP", []));
         results.der = struct("fechas", [], "cristales", struct("PS", [], "CS", [], "PP", [], "CP", []), "intensidades", struct("PS", [], "CS", [], "PP", [], "CP", []));
         for i=1: length(images_der)
@@ -113,7 +114,7 @@ function cistinosis_detection()
                 results.(k{1}).intensidades.CP(end+1) = suma_valores_grises_normalizado(5);
 
                 date_str = strsplit(string(list_files(images_der(i)).name), '_');
-                results.(k{1}).fechas(end+1) = date_str(2);
+                results.(k{1}).fechas(end+1) = date_str(2)+date_str(3);
             end           
         end    
         figure(z); plot_results(results); 
@@ -122,7 +123,7 @@ end
 
 function plot_results(results)
     subplot(2,2,1);
-    dates = datetime(string(results.izq.fechas), 'InputFormat','yyyyMMdd');
+    dates = datetime(string(results.izq.fechas), 'InputFormat','yyyyMMddhhmmss');
     plot(dates, results.izq.cristales.PS, 'o')
     hold on 
     plot(dates, results.izq.cristales.CS, '*') 
@@ -135,7 +136,7 @@ function plot_results(results)
     title("Numeros cristales");
     
     subplot(2,2,3);
-    dates = datetime(string(results.der.fechas), 'InputFormat','yyyyMMdd');
+    dates = datetime(string(results.izq.fechas), 'InputFormat','yyyyMMddhhmmss');
     plot(dates, results.izq.intensidades.PS, 'o')
     hold on 
     plot(dates, results.izq.intensidades.CS, '*') 
@@ -148,7 +149,7 @@ function plot_results(results)
     title("Intensidad de grises");
         
     subplot(2,2,2);
-    dates = datetime(string(results.izq.fechas), 'InputFormat','yyyyMMdd');
+    dates = datetime(string(results.der.fechas), 'InputFormat','yyyyMMddhhmmss');
     plot(dates, results.der.cristales.PS, 'o')
     hold on 
     plot(dates, results.der.cristales.CS, '*') 
@@ -161,7 +162,7 @@ function plot_results(results)
     title("Numeros cristales");
 
     subplot(2,2,4);
-    dates = datetime(string(results.der.fechas), 'InputFormat','yyyyMMdd');
+    dates = datetime(string(results.der.fechas), 'InputFormat','yyyyMMddhhmmss');
     plot(dates, results.der.intensidades.PS, 'o')
     hold on 
     plot(dates, results.der.intensidades.CS, '*') 
